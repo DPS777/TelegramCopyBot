@@ -83,7 +83,7 @@ class TelegramForwarder:
                 if message.reply_to and (converted_msg_id := await convert_msg_id(self, message.reply_to.reply_to_msg_id, message_pairs)):
                     print("  Reply")
                     forwarded_message = await self.client.send_file(destination_channel_id, message.media, caption=message.text, reply_to=converted_msg_id)
-                else:
+                elif not message.reply_to:
                     print("  No Reply")
                     forwarded_message = await self.client.send_file(destination_channel_id, message.media, caption=message.text)
             else:
@@ -91,11 +91,12 @@ class TelegramForwarder:
                 if message.reply_to and (converted_msg_id := await convert_msg_id(self, message.reply_to.reply_to_msg_id, message_pairs)):
                     print("  Reply")
                     forwarded_message = await self.client.send_message(destination_channel_id, message.text, reply_to=converted_msg_id)
-                else:
+                elif not message.reply_to:
                     print("  No Reply")
                     forwarded_message = await self.client.send_message(destination_channel_id, message.text)
         
-            message_pairs.append((message, forwarded_message))
+            if forwarded_message is not None:
+                message_pairs.append((message, forwarded_message))
 
         @self.client.on(events.MessageDeleted([source_chat_id]))
         async def deleteMessage(event):
