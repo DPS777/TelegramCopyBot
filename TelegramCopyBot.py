@@ -100,17 +100,13 @@ class TelegramForwarder:
 
         @self.client.on(events.MessageDeleted([source_chat_id]))
         async def deleteMessage(event):
-
             
-            message = event.message
-
-            if type(message) != Message:
-                return
+            deleted_id = event.deleted_id
 
             print("Delete Message")
 
             for source_message, dest_message in list(message_pairs):
-                if source_message.id == message.id:
+                if source_message.id == deleted_id:
                     await self.client.delete_messages(destination_channel_id, dest_message.id)
                     message_pairs.remove((source_message, dest_message))
                     return
@@ -119,8 +115,6 @@ class TelegramForwarder:
         async def editMessage(event):
 
             message = event.message
-
-            print(event)
             
             if type(message) != Message:
                 return
