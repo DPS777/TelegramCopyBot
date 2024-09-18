@@ -119,6 +119,8 @@ class TelegramForwarder:
         async def editMessage(event):
 
             message = event.message
+
+            print(event)
             
             if type(message) != Message:
                 return
@@ -127,10 +129,9 @@ class TelegramForwarder:
 
             for source_message, dest_message in list(message_pairs):
                 if source_message.id == message.id:
-                    if dest_message.text != message.text:
-                        await self.client.edit_message(destination_channel_id, dest_message.id, message.text)
-                        message_pairs.remove((source_message, dest_message))
-                        message_pairs.append((message, dest_message))
+                    await self.client.edit_message(destination_channel_id, dest_message.id, text=message.text, file=message.media)
+                    message_pairs.remove((source_message, dest_message))
+                    message_pairs.append((message, dest_message))
                     return
 
         await self.client.run_until_disconnected()
