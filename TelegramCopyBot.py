@@ -98,18 +98,30 @@ class TelegramForwarder:
             if forwarded_message is not None:
                 message_pairs.append((message, forwarded_message))
 
-        @self.client.on(events.MessageDeleted([source_chat_id]))
+        @self.client.on(events.MessageDeleted([source_chat_id, destination_channel_id]))
         async def deleteMessage(event):
             
-            deleted_id = event.deleted_id
+            current_channel_id = event.original_update.channel_id
 
-            print("Delete Message")
+            if str(current_channel_id) in str(destination_channel_id):
+                print("Delete Message on Destination")
 
-            for source_message, dest_message in list(message_pairs):
-                if source_message.id == deleted_id:
-                    await self.client.delete_messages(destination_channel_id, dest_message.id)
-                    message_pairs.remove((source_message, dest_message))
-                    return
+                # Get the last deleted message ID, because the deletes made by the bot count as deleted messages
+                deleted_id = event.deleted_ids[len(event.deleted_ids) - 1]
+                for source_message, dest_message in list(message_pairs):
+                    if dest_message.id == deleted_id:
+                        message_pairs.remove((source_message, dest_message))
+                        return
+            else:
+                print("Delete Message on Source")
+                
+                # Get the last deleted message ID, but here the deletes are not made by the bot so they are counted as one
+                deleted_id = event.deleted_id
+                for source_message, dest_message in list(message_pairs):
+                    if source_message.id == deleted_id:
+                        await self.client.delete_messages(destination_channel_id, dest_message.id)
+                        message_pairs.remove((source_message, dest_message))
+                        return
 
         @self.client.on(events.MessageEdited([source_chat_id]))
         async def editMessage(event):
@@ -127,7 +139,7 @@ class TelegramForwarder:
                     message_pairs.remove((source_message, dest_message))
                     message_pairs.append((message, dest_message))
                     return
-
+                
         await self.client.run_until_disconnected()
 
 
@@ -232,7 +244,6 @@ async def main():
 # Start the event loop and run the main function
 if __name__ == "__main__":
     asyncio.run(main())
-
 
 ## NAO TEM AFIXAR
 ## ADICIONAR VÁRIOS CANAIS PARA COPIAR E DE DESTINO

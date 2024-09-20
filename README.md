@@ -54,6 +54,21 @@ Occurs whenever a message is deleted. Note that this event isn’t 100% reliable
 
     This means that the chats= parameter will not work reliably, unless you intend on working with channels and super-groups only.
 
+## Notes
+
+### MessageDeleted Event
+Messages deleted by the bot are placed in an event array until manual deletion is carried out. When this manual deletion is carried out, all messages deleted up to this point are returned in the array, but the deleted_id of the event is the first element of the array, which may not match the last deleted message. 
+
+```sh
+MessageDeleted.Event(original_update=UpdateDeleteChannelMessages(channel_id=2173968782, messages=[1238, 1239, 1240], pts=1327, pts_count=0), deleted_id=1238, deleted_ids=[1238, 1239, 1240])
+```
+
+When messages are deleted manually, the array has only one element that corresponds to the deleted_id.
+
+```sh
+MessageDeleted.Event(original_update=UpdateDeleteChannelMessages(channel_id=2173968782, messages=[1249], pts=1348, pts_count=1), deleted_id=1249, deleted_ids=[1249])
+```
+
 ## Future Features
 
 - Add pin messages
